@@ -1,5 +1,5 @@
 ````markdown
-# LSDT — First-Principles Sizing Engine (Steps 0–2)
+# CausalCompute — First-Principles Sizing Engine (Steps 0–2)
 
 > **Infrastructure decisions are derivations from physics and workload, not brand templates.**
 
