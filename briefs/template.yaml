@@ -1,0 +1,85 @@
+# briefs/template.yaml
+#
+# LSDT (Steps 0–2) brief template
+# - Keep everything in SI units (bytes, seconds, bytes/s, FLOP/s, W).
+# - Use `null` for “auto” / “unspecified”.
+# - Scientific notation is fine (e.g., 13e9).
+
+workload:
+  P: 13e9
+  Tok: 3e12
+  T: 2592000        # seconds (30 days)
+  c: 6.0            # FLOPs per param-token (dense transformer ~6)
+
+state_bytes:
+  b_w: 2.0          # bytes/param for weights
+  b_g: 2.0          # bytes/param for gradients
+  b_opt: 8.0        # bytes/param for optimizer state
+
+io:
+  b_tok: 2.0        # bytes/token dataset stream
+  A_io: 1.3         # dataset BW headroom multiplier
+  b_ckpt: 2.0       # bytes/param written per checkpoint (often weights only)
+  t_ckpt_max: 300.0 # max allowed checkpoint time [s]
+
+device:
+  F_dev_sust_flop_s: 1e15   # sustained per-device compute [FLOP/s]
+  B_dev_mem_bytes: 8e10     # device memory capacity [bytes]
+
+step:
+  # Global instantaneous working set needed during one update step (activations, temps, etc)
+  B_step_bytes: 1.5e11
+
+  # Global tokens processed per update step
+  Tok_per_step: 4e7
+
+  update:
+    # Algorithmic “update signal size” per param (often gradient bytes)
+    b_update_per_param: 2.0
+    k_update: 1.0
+
+capabilities:
+  # Step 0 treats these as informational abstractions.
+  fabric:
+    BW_sust_Bps: 1e11
+
+  storage:
+    BW_sust_Bps: 5e9
+
+  checkpoint_policy:
+    seconds_per_ckpt: 3600.0
+
+design:
+  # If null => Step 1 auto-sizes G from Step-0 lower bound upward.
+  # If an int => Step 1 tests feasibility for that fixed G.
+  G: null
+
+  gpus_per_node: 8
+  eta_compute: 0.35
+  eta_fabric: 0.80
+
+  tp_max: 16
+  pp_max: 16
+  g_max_multiplier: 8
+
+  comm_model: ring_allreduce_dp_only
+
+power_thermals:
+  power:
+    P_gpu_W: 700.0
+    P_cpu_W_per_node: 250.0
+    P_other_W_per_node: 300.0
+    PUE: 1.30
+
+  cooling:
+    # air|liquid
+    mode: liquid
+    deltaT_air_C: 15.0
+    deltaT_liquid_C: 12.0
+
+  rack:
+    # Optional rack sanity. Use null to disable.
+    nodes_per_rack: null
+    rack_power_limit_W: null
+    racks: null
+
