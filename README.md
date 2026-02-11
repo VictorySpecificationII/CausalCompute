@@ -1,4 +1,3 @@
-````markdown
 # CausalCompute — First-Principles Sizing Engine (Steps 0–2)
 
 > **Infrastructure decisions are derivations from physics and workload, not brand templates.**
@@ -217,7 +216,3 @@ Built from the viewpoint of someone who has lived in:
 * motorsport engineering
 
 Treating datacenters as **thermodynamic machines**, not SKU catalogs.
-
-```
-```
-
