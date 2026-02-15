@@ -1,0 +1,8 @@
+=== 128MiB ===
+WORLD=16 MSG_MiB=128 dt_s=0.000762 algbw_GBps=330.46
+=== 256MiB ===
+WORLD=16 MSG_MiB=256 dt_s=0.001316 algbw_GBps=382.42
+=== 512MiB ===
+WORLD=16 MSG_MiB=512 dt_s=0.002426 algbw_GBps=414.93
+=== 1024MiB ===
+WORLD=16 MSG_MiB=1024 dt_s=0.004591 algbw_GBps=438.54
