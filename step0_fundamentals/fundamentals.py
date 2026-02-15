@@ -224,8 +224,16 @@ def step_time_consistency(
 
 @dataclass(frozen=True)
 class FabricCapability:
-    """Topology-agnostic fabric abstraction: sustained payload BW available per device/rank."""
-    BW_sust_Bps: float  # [bytes/s]
+    """
+    Topology-agnostic fabric abstraction used by Step 1.
+
+    IMPORTANT CONTRACT (v1):
+      - BW_node_sust_Bps is the sustained payload bandwidth available per *node*
+        for inter-node collectives (after protocol/stack effects are applied later via eta_fabric).
+
+    Step 1 computes inter-node bytes per *node per step* and divides by this value.
+    """
+    BW_node_sust_Bps: float  # [bytes/s]
 
 
 # =============================================================================
@@ -294,7 +302,7 @@ def _build_meta(dev: Device, fabric: FabricCapability) -> dict[str, float]:
         "F_dev_sust_flop_s": float(dev.F_dev_sust_flop_s),
         "B_dev_mem_bytes": float(dev.B_dev_mem_bytes),
         # Interpreted downstream as per-rank sustained payload capability for collectives
-        "BW_fabric_sust_Bps": float(fabric.BW_sust_Bps),
+        "BW_fabric_sust_Bps": float(fabric.BW_node_sust_Bps),
     }
 
 

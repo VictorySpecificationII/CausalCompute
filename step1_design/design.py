@@ -168,7 +168,7 @@ def run_design(
     B_dev_mem_bytes = float(meta["B_dev_mem_bytes"])
 
     # Per-node sustained payload bandwidth abstraction (v1)
-    BW_fabric_sust_Bps = float(meta["BW_fabric_sust_Bps"])
+    BW_fabric_node_sust_Bps = float(meta["BW_fabric_node_sust_Bps"])
 
     # Step-0 strongest "must exist" device count (lower bound, not a design)
     N_guess = int(ceil(float(timecmp["N_guess_devices"])))
@@ -257,7 +257,7 @@ def run_design(
                 B_inter_node_bytes_per_step = float(comm["B_comm_inter_per_node_bytes_per_step"])
 
                 # Effective sustained fabric payload (per node) after eta_fabric
-                BW_effective_node_Bps = BW_fabric_sust_Bps * inp.eta_fabric
+                BW_effective_node_Bps = BW_fabric_node_sust_Bps * inp.eta_fabric
                 t_comm = B_inter_node_bytes_per_step / BW_effective_node_Bps if BW_effective_node_Bps > 0 else float("inf")
 
                 tc = t_compute_s(Gi)

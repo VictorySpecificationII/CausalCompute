@@ -137,7 +137,10 @@ def load_brief_yaml(path: str) -> Brief012:
 
     fab = caps.get("fabric", {}) or {}
     fabric = FabricCapability(
-        BW_sust_Bps=_as_float(fab.get("BW_sust_Bps", 0.0), "capabilities.fabric.BW_sust_Bps")
+        BW_node_sust_Bps=_as_float(
+            fab.get("BW_node_sust_Bps", 0.0),
+            "capabilities.fabric.BW_node_sust_Bps",
+        )
     )
 
     stc = caps.get("storage", {}) or {}

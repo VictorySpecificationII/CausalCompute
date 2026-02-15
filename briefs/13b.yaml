@@ -28,7 +28,7 @@ step:
 
 capabilities:
   fabric:
-    BW_sust_Bps: 1e11
+    BW_node_sust_Bps: 1e11
   storage:
     BW_sust_Bps: 5e9
   checkpoint_policy:
