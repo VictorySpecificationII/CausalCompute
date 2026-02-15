@@ -15,7 +15,7 @@ Step 0 — Fundamentals
 Step 1 — Design
 - G:           8 GPUs  (1 nodes @ 8/node)
 - dp/tp/pp:     8/1/1
-- t_step:       3.786435e-02 s  (max 4.050000e-02 s)
+- t_step:       3.781034e-02 s  (max 4.050000e-02 s)
 - mem/dev:      1.905970e+09 B (cap 8.000000e+10 B)
 
 Step 2 — Power & Thermals
@@ -36,7 +36,7 @@ BUNDLE0 (Step 0)
           'S_ckpt_bytes': 1207959552.0,
           'T_ckpt_total_min_s': 0.2415919104,
           'ckpt_fraction_of_run': 5.965232355555555,
-          'seconds_per_ckpt': 3600.0,
+          'seconds_per_ckpt': 1000000000000.0,
           't_ckpt_min_s': 0.2415919104},
  'device_bounds': {'N_compute_lower_bound': 3.0,
                    'N_min_lower_bound': 3.0,
@@ -74,7 +74,7 @@ DESIGN (Step 1)
 ---
 {'diagnostics': {'inputs': {'comm_exposed_fraction': 0.05,
                             'comm_model': 'ring_allreduce_dp_only',
-                            'eta_compute': 0.35,
+                            'eta_compute': 0.3505,
                             'eta_fabric': 1.0,
                             'g_max_multiplier': 1,
                             'gpus_per_node': 8,
@@ -95,9 +95,9 @@ DESIGN (Step 1)
                                      'Gi': 8,
                                      'mem_best_case_bytes': 1905969664.0,
                                      'mem_best_case_ok': True,
-                                     't_compute_s': 0.03786435498569143,
+                                     't_compute_s': 0.037810340213957204,
                                      't_step_max_s': 0.0405,
-                                     't_step_s': 0.03786435498569143,
+                                     't_step_s': 0.037810340213957204,
                                      'time_note': 'Timing depends on dp/tp/pp '
                                                   'via comm model (ring '
                                                   'all-reduce baseline).',
@@ -109,7 +109,7 @@ DESIGN (Step 1)
                                'B_comm_per_gpu_bytes_per_step': 2113929216.0,
                                'frac_inter_node_est': 0.0,
                                'model': 'ring_allreduce_dp_only'},
-             'efficiency': {'eta_compute': 0.35, 'eta_fabric': 1.0},
+             'efficiency': {'eta_compute': 0.3505, 'eta_fabric': 1.0},
              'parallelism': {'dp': 8, 'pp': 1, 'tp': 1}},
  'solution': {'cluster': {'G': 8, 'gpus_per_node': 8, 'nodes': 1},
               'communication': {'B_comm_inter_per_gpu_bytes_per_step': 0.0,
@@ -123,7 +123,7 @@ DESIGN (Step 1)
                                 'model': 'ring_allreduce_dp_only',
                                 'payload_per_rank_bytes': 1207959552.0},
               'constraints': {'dp_tp_pp_equals_G': True, 'ok': True},
-              'efficiency': {'eta_compute': 0.35, 'eta_fabric': 1.0},
+              'efficiency': {'eta_compute': 0.3505, 'eta_fabric': 1.0},
               'memory': {'B_dev_mem_bytes': 80000000000.0,
                          'bytes_per_device': 1905969664.0,
                          'instant_bytes_total': 1000000000.0,
@@ -131,11 +131,11 @@ DESIGN (Step 1)
                          'model': 'state/DP + instant/(TP×PP)',
                          'state_bytes_total': 7247757312.0},
               'parallelism': {'dp': 8, 'pp': 1, 'tp': 1},
-              'timing': {'headroom_s': 0.002635645014308574,
+              'timing': {'headroom_s': 0.0026896597860427973,
                          't_comm_s': 0.0,
-                         't_compute_s': 0.03786435498569143,
+                         't_compute_s': 0.037810340213957204,
                          't_step_max_s': 0.0405,
-                         't_step_s': 0.03786435498569143,
+                         't_step_s': 0.037810340213957204,
                          'time_ok': True}}}
 
 ---
