@@ -331,7 +331,7 @@ def run_design(
             "capabilities": {
                 "F_dev_sust_flop_s": float(F_dev_sust_flop_s),
                 "B_dev_mem_bytes": float(B_dev_mem_bytes),
-                "BW_fabric_sust_Bps": float(BW_fabric_node_sust_Bps),
+                "BW_fabric_node_sust_Bps": float(BW_fabric_node_sust_Bps),
             },
             "N_guess_devices": int(N_guess),
             "B_update_total_bytes_per_step": float(B_update_total_bytes_per_step),
@@ -384,7 +384,7 @@ def run_design(
                     "increase G (for more DP sharding), or reduce state/instantaneous working set."
                 )
             reason["hints"].append(
-                "Time closure depends on dp/tp/pp under the comm model: consider increasing BW_fabric_sust_Bps, "
+                "Time closure depends on dp/tp/pp under the comm model: consider increasing BW_fabric_node_sust_Bps, "
                 "increasing eta_fabric, increasing G, or reducing the update payload per step (Tok_per_step)."
             )
 
