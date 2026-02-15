@@ -331,7 +331,7 @@ def run_design(
             "capabilities": {
                 "F_dev_sust_flop_s": float(F_dev_sust_flop_s),
                 "B_dev_mem_bytes": float(B_dev_mem_bytes),
-                "BW_fabric_sust_Bps": float(BW_fabric_sust_Bps),
+                "BW_fabric_sust_Bps": float(BW_fabric_node_sust_Bps),
             },
             "N_guess_devices": int(N_guess),
             "B_update_total_bytes_per_step": float(B_update_total_bytes_per_step),

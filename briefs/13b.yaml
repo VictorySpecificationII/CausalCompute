@@ -30,7 +30,7 @@ capabilities:
   fabric:
     BW_node_sust_Bps: 1e11
   storage:
-    BW_sust_Bps: 5e9
+    BW_ckpt_sust_Bps: 5e9
   checkpoint_policy:
     seconds_per_ckpt: 3600.0
 

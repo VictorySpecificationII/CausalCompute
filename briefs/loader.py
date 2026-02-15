@@ -145,7 +145,10 @@ def load_brief_yaml(path: str) -> Brief012:
 
     stc = caps.get("storage", {}) or {}
     storage = StorageCapability(
-        BW_sust_Bps=_as_float(stc.get("BW_sust_Bps", 0.0), "capabilities.storage.BW_sust_Bps")
+        BW_ckpt_sust_Bps=_as_float(
+            stc.get("BW_ckpt_sust_Bps", 0.0),
+            "capabilities.storage.BW_ckpt_sust_Bps",
+        )
     )
 
     ck = caps.get("checkpoint_policy", {}) or {}

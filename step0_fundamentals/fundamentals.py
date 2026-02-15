@@ -257,8 +257,8 @@ def step_time_budget(t_step_max_s: float, t_step_compute_min_s: float, t_comm_s:
 
 @dataclass(frozen=True)
 class StorageCapability:
-    """Topology-agnostic storage abstraction: sustained write bandwidth available for checkpoints."""
-    BW_sust_Bps: float  # [bytes/s]
+    """Checkpoint storage abstraction: sustained write bandwidth available for checkpoint writes."""
+    BW_ckpt_sust_Bps: float  # [bytes/s]
 
 
 @dataclass(frozen=True)
@@ -274,13 +274,13 @@ def checkpoint_time_scales(
     policy: CheckpointPolicy,
 ) -> dict[str, float]:
     S_ckpt = req["S_ckpt_bytes"]                      # [bytes]
-    t_ckpt_min = S_ckpt / storage.BW_sust_Bps         # [s/ckpt]
+    t_ckpt_min = S_ckpt / storage.BW_ckpt_sust_Bps         # [s/ckpt]
     N_ckpt = float(ceil(w.T / policy.seconds_per_ckpt))
     T_ckpt_total_min = N_ckpt * t_ckpt_min
     ckpt_fraction_of_run = T_ckpt_total_min / w.T
     return {
         "S_ckpt_bytes": S_ckpt,
-        "BW_storage_sust_Bps": storage.BW_sust_Bps,
+        "BW_ckpt_sust_Bps": storage.BW_ckpt_sust_Bps,
         "seconds_per_ckpt": policy.seconds_per_ckpt,
         "t_ckpt_min_s": t_ckpt_min,
         "N_ckpt": N_ckpt,
@@ -302,7 +302,7 @@ def _build_meta(dev: Device, fabric: FabricCapability) -> dict[str, float]:
         "F_dev_sust_flop_s": float(dev.F_dev_sust_flop_s),
         "B_dev_mem_bytes": float(dev.B_dev_mem_bytes),
         # Interpreted downstream as per-rank sustained payload capability for collectives
-        "BW_fabric_sust_Bps": float(fabric.BW_node_sust_Bps),
+        "BW_fabric_node_sust_Bps": float(fabric.BW_node_sust_Bps),
     }
 
 
