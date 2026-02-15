@@ -1,6 +1,6 @@
 # CausalCompute — First-Principles Sizing Engine (Steps 0–2)
 
-> **Infrastructure decisions are derivations from physics and workload, not brand templates.**
+> **Infrastructure decisions are derivations from physics and workload, not brand templates — and the predictions have been validated against real H100 InfiniBand training runs.**
 
 This repository implements a vendor-neutral method to translate **AI training intent** into **physical requirements** using only SI units and explicit assumptions.
 
@@ -193,6 +193,68 @@ Those come later — after physics is satisfied.
 * “What coolant flow is implied by the workload?”
 * “How much power does the facility need to commit?”
 * “What bandwidth must the fabric expose before topology?”
+
+---
+
+## Validation
+
+CausalCompute has been validated against real distributed training measurements on an H100 InfiniBand cluster.
+
+Measured on Nebius H100 SXM nodes:
+
+- 8 GPU step time: 0.037809 s  
+- 16 GPU step time: 0.039018 s  
+
+CausalCompute prediction:
+
+- 8 GPU predicted: 0.037810 s  
+- 16 GPU predicted: 0.038975 s  
+
+Error:
+
+- absolute step-time error: < 0.11%  
+- scaling penalty error: < 4%  
+
+This demonstrates that distributed training performance emerges correctly from:
+
+- workload FLOPs
+- sustained compute efficiency
+- sustained fabric bandwidth
+- communication overlap assumptions
+
+without encoding vendor topology, product specifications, or empirical scaling curves.
+
+The only calibrated inputs were sustained compute efficiency and sustained fabric bandwidth, both directly measured on the target system. No topology-specific heuristics, scaling curves, or vendor performance models were used.
+
+Full validation details and reproducible commands are available in:
+
+```bash
+evidence/nebius_h100_ib_validation.md
+```
+
+This demonstrates that cluster sizing and distributed training performance can be derived from first principles and validated against real hardware.
+
+---
+
+## Evidence Structure
+
+Validation artifacts are organized as follows:
+
+```bash
+evidence/
+├── nebius_h100_ib_validation.md ← validation report
+├── causalcompute_validation_backup/
+│ ├── allreduce_bw_node0.txt ← measured fabric bandwidth
+│ ├── ddp_8gpu.txt ← measured single-node step time
+│ ├── ddp_16gpu_node0.txt ← measured multi-node step time
+│ └── *.py ← benchmark scripts
+│
+├── validate_dp8.out ← predicted 8 GPU result
+└── validate_dp16.out ← predicted 16 GPU result
+```
+
+This provides full traceability from measurement → model → prediction.
+
 
 ---
 
