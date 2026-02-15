@@ -1,0 +1,177 @@
+
+================================================================================
+SUMMARY (Steps 0–2)
+================================================================================
+
+Step 0 — Fundamentals
+- F_req:          5.235565e+15 FLOP/s
+- Tok rate:       1.444741e+06 tok/s
+- BW dataset:     2.889481e+06 B/s
+- S_ckpt:         1.207960e+09 B
+- BW_ckpt_req:    4.026532e+06 B/s
+- t_step_max:     4.050000e-02 s/step
+- B_update/step:  1.207960e+09 B/step
+
+Step 1 — Design
+- G:           16 GPUs  (2 nodes @ 8/node)
+- dp/tp/pp:     16/1/1
+- t_step:       3.902865e-02 s  (max 4.050000e-02 s)
+- mem/dev:      1.452985e+09 B (cap 8.000000e+10 B)
+
+Step 2 — Power & Thermals
+- IT power:       1.230000e+04 W
+- Facility power: 1.599000e+04 W (PUE=1.30)
+- Heat:           1.230000e+04 W
+- Coolant flow:   2.448638e-04 m^3/s (ΔT=12.0°C)
+
+================================================================================
+END SUMMARY
+================================================================================
+
+---
+BUNDLE0 (Step 0)
+---
+{'ckpt': {'BW_ckpt_sust_Bps': 5000000000.0,
+          'N_ckpt': 1.0,
+          'S_ckpt_bytes': 1207959552.0,
+          'T_ckpt_total_min_s': 0.2415919104,
+          'ckpt_fraction_of_run': 5.965232355555555,
+          'seconds_per_ckpt': 3600.0,
+          't_ckpt_min_s': 0.2415919104},
+ 'device_bounds': {'N_compute_lower_bound': 6.0,
+                   'N_min_lower_bound': 6.0,
+                   'N_state_memory_lower_bound': 1.0},
+ 'instant': {'B_instant_min_bytes': 8247757312.0,
+             'B_step_bytes': 1000000000.0,
+             'N_instant_device_lower_bound': 1.0},
+ 'meta': {'BW_fabric_node_sust_Bps': 415000000000.0,
+          'B_dev_mem_bytes': 80000000000.0,
+          'F_dev_sust_flop_s': 1000000000000000.0},
+ 'movement': {'BW_update_global_min_Bps': 29826161777.77778,
+              'B_update_total_bytes_per_step': 1207959552.0,
+              'Tok_per_step': 58512.0,
+              't_step_max_s': 0.0405},
+ 'req': {'BW_ckpt_req_Bps': 4026531.84,
+         'BW_dataset_ideal_Bps': 2889481.4814814813,
+         'BW_dataset_plan_Bps': 2889481.4814814813,
+         'B_grads_min_bytes': 1207959552.0,
+         'B_opt_min_bytes': 4831838208.0,
+         'B_state_min_bytes': 7247757312.0,
+         'B_weights_min_bytes': 1207959552.0,
+         'F_req_flop_s': 5235565133824000.0,
+         'F_total_flop': 212040387919872.0,
+         'R_tok_req_tok_s': 1444740.7407407407,
+         'S_ckpt_bytes': 1207959552.0},
+ 'stepfacts': {'F_step_flop': 212040387919872.0, 'N_steps': 1.0},
+ 'timecmp': {'F_step_flop': 212040387919872.0,
+             'N_devices_time_only': 6.0,
+             'N_guess_devices': 6.0,
+             't_step_compute_min_s': 0.035340064653312,
+             't_step_max_s': 0.0405}}
+
+---
+DESIGN (Step 1)
+---
+{'diagnostics': {'inputs': {'comm_exposed_fraction': 0.05,
+                            'comm_model': 'ring_allreduce_dp_only',
+                            'eta_compute': 0.35,
+                            'eta_fabric': 1.0,
+                            'g_max_multiplier': 1,
+                            'gpus_per_node': 8,
+                            'pp_max': 1,
+                            'tp_max': 1},
+                 'mode': 'B',
+                 'physics_echo': {'B_state_min_bytes': 7247757312.0,
+                                  'B_step_bytes': 1000000000.0,
+                                  'B_update_total_bytes_per_step': 1207959552.0,
+                                  'F_step_flop': 212040387919872.0,
+                                  'N_guess_devices': 6,
+                                  'capabilities': {'BW_fabric_node_sust_Bps': 415000000000.0,
+                                                   'B_dev_mem_bytes': 80000000000.0,
+                                                   'F_dev_sust_flop_s': 1000000000000000.0},
+                                  't_step_max_s': 0.0405},
+                 'search': {'G_fixed': 16,
+                            'diag': {'B_update_total_bytes_per_step': 1207959552.0,
+                                     'Gi': 16,
+                                     'mem_best_case_bytes': 1452984832.0,
+                                     'mem_best_case_ok': True,
+                                     't_compute_s': 0.03786435498569143,
+                                     't_step_max_s': 0.0405,
+                                     't_step_s': 0.03902865334906492,
+                                     'time_note': 'Timing depends on dp/tp/pp '
+                                                  'via comm model (ring '
+                                                  'all-reduce baseline).',
+                                     'time_ok': True}}},
+ 'feasible': True,
+ 'handoff': {'cluster': {'G': 16, 'gpus_per_node': 8, 'nodes': 2},
+             'communication': {'B_comm_inter_per_gpu_bytes_per_step': 1207959552.0,
+                               'B_comm_inter_per_node_bytes_per_step': 9663676416.0,
+                               'B_comm_per_gpu_bytes_per_step': 2264924160.0,
+                               'frac_inter_node_est': 0.5333333333333333,
+                               'model': 'ring_allreduce_dp_only'},
+             'efficiency': {'eta_compute': 0.35, 'eta_fabric': 1.0},
+             'parallelism': {'dp': 16, 'pp': 1, 'tp': 1}},
+ 'solution': {'cluster': {'G': 16, 'gpus_per_node': 8, 'nodes': 2},
+              'communication': {'B_comm_inter_per_gpu_bytes_per_step': 1207959552.0,
+                                'B_comm_inter_per_node_bytes_per_step': 9663676416.0,
+                                'B_comm_per_gpu_bytes_per_step': 2264924160.0,
+                                'B_dp_allreduce_bytes_per_step': 2264924160.0,
+                                'B_pp_bytes_per_step': 0.0,
+                                'B_tp_bytes_per_step': 0.0,
+                                'B_update_total_bytes_per_step': 1207959552.0,
+                                'frac_inter_node_est': 0.5333333333333333,
+                                'model': 'ring_allreduce_dp_only',
+                                'payload_per_rank_bytes': 1207959552.0},
+              'constraints': {'dp_tp_pp_equals_G': True, 'ok': True},
+              'efficiency': {'eta_compute': 0.35, 'eta_fabric': 1.0},
+              'memory': {'B_dev_mem_bytes': 80000000000.0,
+                         'bytes_per_device': 1452984832.0,
+                         'instant_bytes_total': 1000000000.0,
+                         'mem_ok': True,
+                         'model': 'state/DP + instant/(TP×PP)',
+                         'state_bytes_total': 7247757312.0},
+              'parallelism': {'dp': 16, 'pp': 1, 'tp': 1},
+              'timing': {'headroom_s': 0.001471346650935082,
+                         't_comm_s': 0.02328596726746988,
+                         't_compute_s': 0.03786435498569143,
+                         't_step_max_s': 0.0405,
+                         't_step_s': 0.03902865334906492,
+                         'time_ok': True}}}
+
+---
+POWER & THERMALS (Step 2)
+---
+{'cluster': {'G': 16, 'gpus_per_node': 8, 'nodes': 2},
+ 'energy': {'E_IT_kWh': 0.00013837500000000002,
+            'E_facility_kWh': 0.0001798875,
+            'T_run_s': 0.0405},
+ 'handoff': {'cluster': {'G': 16, 'gpus_per_node': 8, 'nodes': 2},
+             'energy': {'E_IT_kWh': 0.00013837500000000002,
+                        'E_facility_kWh': 0.0001798875,
+                        'T_run_s': 0.0405},
+             'heat': {'Qdot_W': 12300.0},
+             'power': {'PUE': 1.3, 'P_IT_W': 12300.0, 'P_facility_W': 15990.0},
+             'rack': None,
+             'thermals': {'deltaT_C': 12.0,
+                          'mass_flow_kg_s': 0.24486383182035357,
+                          'mode': 'liquid',
+                          'vol_flow_m3_s': 0.00024486383182035354}},
+ 'heat': {'Qdot_W': 12300.0, 'Qdot_kW': 12.3},
+ 'meta': {'display_units_included': False, 'si_contract': True},
+ 'power': {'inputs': {'PUE': 1.3,
+                      'P_cpu_W_per_node': 250.0,
+                      'P_gpu_W': 700.0,
+                      'P_other_W_per_node': 300.0},
+           'ledger_W': {'P_IT_W': 12300.0,
+                        'P_cpu_W': 500.0,
+                        'P_facility_W': 15990.0,
+                        'P_gpus_W': 11200.0,
+                        'P_other_W': 600.0},
+           'ledger_kW': {'P_IT_kW': 12.3, 'P_facility_kW': 15.99}},
+ 'rack': {'enabled': False},
+ 'thermals': {'assumptions': {'cp_J_kgK': 4186.0,
+                              'deltaT_C': 12.0,
+                              'rho_kg_m3': 1000.0},
+              'mode': 'liquid',
+              'results': {'mass_flow_kg_s': 0.24486383182035357,
+                          'vol_flow_m3_s': 0.00024486383182035354}}}

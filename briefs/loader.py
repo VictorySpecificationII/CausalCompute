@@ -179,6 +179,8 @@ def load_brief_yaml(path: str) -> Brief012:
         pp_max=_as_int(d1.get("pp_max", 16), "design.pp_max"),
         g_max_multiplier=_as_int(d1.get("g_max_multiplier", 8), "design.g_max_multiplier"),
         comm_model=str(d1.get("comm_model", "ring_allreduce_dp_only")),
+        comm_exposed_fraction=_as_float(d1.get("comm_exposed_fraction", 1.0),
+                                    "design.comm_exposed_fraction"),
     )
 
     # ---------------------------------------------------------------------

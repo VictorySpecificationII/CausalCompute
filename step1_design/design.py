@@ -28,6 +28,7 @@ class DesignInputs:
 
     # Communication model selection (v1)
     comm_model: str = "ring_allreduce_dp_only"  # placeholder for future variants
+    comm_exposed_fraction: float = 1.0  # 1.0 = no overlap, 0.0 = fully hidden
 
 
 # =============================================================================
@@ -57,6 +58,8 @@ def _validate_inputs(inp: DesignInputs) -> None:
         raise ValueError("g_max_multiplier must be > 0")
     if inp.comm_model not in ("ring_allreduce_dp_only",):
         raise ValueError("Unsupported comm_model (v1 only supports ring_allreduce_dp_only).")
+    if not (0.0 <= inp.comm_exposed_fraction <= 1.0):
+        raise ValueError("comm_exposed_fraction must be in [0,1]")
 
 
 def _score_candidate(c: Dict[str, Any], mode: str) -> Tuple[float, int, int, int]:
@@ -261,7 +264,7 @@ def run_design(
                 t_comm = B_inter_node_bytes_per_step / BW_effective_node_Bps if BW_effective_node_Bps > 0 else float("inf")
 
                 tc = t_compute_s(Gi)
-                ts = tc + t_comm
+                ts = tc + (inp.comm_exposed_fraction * t_comm)
 
                 if ts > t_step_max_s:
                     continue

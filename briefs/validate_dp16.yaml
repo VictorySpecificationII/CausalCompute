@@ -1,0 +1,62 @@
+workload:
+  P: 6.03979776e8
+  Tok: 58512.0
+  T: 0.0405
+  c: 6.0
+
+state_bytes:
+  b_w: 2.0
+  b_g: 2.0
+  b_opt: 8.0
+
+io:
+  b_tok: 2.0
+  A_io: 1.0
+  b_ckpt: 2.0
+  t_ckpt_max: 300.0
+
+device:
+  F_dev_sust_flop_s: 1.0e15
+  B_dev_mem_bytes: 8.0e10
+
+step:
+  B_step_bytes: 1.0e9
+  Tok_per_step: 58512.0
+  update:
+    b_update_per_param: 2.0
+    k_update: 1.0
+
+capabilities:
+  fabric:
+    BW_node_sust_Bps: 4.15e11
+  storage:
+    BW_sust_Bps: 5e9
+    BW_ckpt_sust_Bps: 5e9
+  checkpoint_policy:
+    seconds_per_ckpt: 3600.0
+
+design:
+  G: 16
+  gpus_per_node: 8
+  eta_compute: 0.35
+  eta_fabric: 1.0
+  tp_max: 1
+  pp_max: 1
+  g_max_multiplier: 1
+  comm_model: ring_allreduce_dp_only
+  comm_exposed_fraction: 0.05
+
+power_thermals:
+  power:
+    P_gpu_W: 700.0
+    P_cpu_W_per_node: 250.0
+    P_other_W_per_node: 300.0
+    PUE: 1.30
+  cooling:
+    mode: liquid
+    deltaT_air_C: 15.0
+    deltaT_liquid_C: 12.0
+  rack:
+    nodes_per_rack: null
+    rack_power_limit_W: null
+    racks: null
