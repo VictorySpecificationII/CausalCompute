@@ -27,3 +27,14 @@ include = ["causalcompute*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["causalcompute"]
+omit = [
+    "causalcompute/io/report.py",   # presentation layer — no automated tests
+    "causalcompute/app/*",          # Streamlit UI — requires browser
+]
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true
