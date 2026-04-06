@@ -9,7 +9,7 @@ Status: [ ] not started  [~] partial  [x] done
 
 The core physics is validated but covers a narrow slice of real training configurations.
 
-- [ ] **ZeRO stage modeling** — currently assumes full model replica per DP rank. ZeRO-1/2/3 shards optimizer state, gradients, and weights across DP; changes both memory and comm volume significantly.
+- [x] **ZeRO stage modeling** — stages 0-3 with correct TP×PP-aware memory formula and ZeRO-3 comm model (reduce-scatter + 2×allgather). Default ZeRO-0 (conservative). 21 tests.
 - [ ] **Pipeline bubble overhead** — PP > 1 incurs a bubble fraction of `(pp-1)/(pp * micro_steps)`. Currently not deducted from useful compute time; Step 1 timing is optimistic for PP > 1.
 - [ ] **TP communication modeled explicitly** — intra-node TP comm is flagged via NVLink check but not included in `t_step_s`. For PCIe nodes or large TP degrees, this is a real bottleneck.
 - [ ] **Compute/comm overlap** — `comm_exposed_fraction` exists as a knob but defaults to 1.0 (no overlap). Real frameworks (Megatron-LM, FSDP) overlap backward pass with gradient allreduce. Model the overlap properly.
@@ -131,7 +131,7 @@ If this had to ship as a real product, the order would be:
 
 1. ~~Cost model (CapEx + cost/token)~~ ✓ — `core/cost.py`, two accounting views, 27 tests
 2. ~~Bottleneck identification~~ ✓ — `core/analysis.py`, binding constraint + headroom + recommendations, 30 tests
-3. ZeRO stage modeling — most production training uses ZeRO; without it the memory model is wrong for large models
+3. ~~ZeRO stage modeling~~ ✓ — `core/design.py`, stages 0-3, correct TP×PP-aware memory + ZeRO-3 comm model, 21 tests
 4. JSON output + PyPI publish — distribution and integration
 5. CI/CD + versioned releases — minimum viable open-source project hygiene
 6. Cross-validation against published training reports — credibility
