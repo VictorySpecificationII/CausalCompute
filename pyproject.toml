@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "causalcompute"
+version = "0.1.0"
+description = "Vendor-neutral, first-principles AI training infrastructure sizing engine"
+requires-python = ">=3.10"
+dependencies = [
+    "pyyaml>=6.0",
+    "streamlit>=1.30",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=4.0",
+]
+
+[project.scripts]
+causalcompute = "causalcompute.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["causalcompute*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
