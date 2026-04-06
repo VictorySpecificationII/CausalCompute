@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import argparse
+import json
+import math
 import sys
 from pprint import pprint
 
@@ -15,6 +17,24 @@ from .core.cost import run_cost
 from .core.analysis import run_bottleneck
 from .io.loader import load_brief
 from .io.report import print_summary, print_story
+
+
+class _SafeEncoder(json.JSONEncoder):
+    """JSON encoder that maps non-finite floats to null."""
+    def iterencode(self, o, _one_shot=False):
+        # Walk the object and replace inf/nan before encoding
+        return super().iterencode(_sanitize(o), _one_shot)
+
+
+def _sanitize(obj):
+    """Recursively replace non-finite floats with None (→ JSON null)."""
+    if isinstance(obj, float):
+        return None if not math.isfinite(obj) else obj
+    if isinstance(obj, dict):
+        return {k: _sanitize(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_sanitize(v) for v in obj]
+    return obj
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -33,9 +53,15 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Print the Step-0 causal narrative and exit.",
     )
     p.add_argument(
+        "--output",
+        choices=["text", "json"],
+        default="text",
+        help="Output format: 'text' (default) or 'json' (machine-readable).",
+    )
+    p.add_argument(
         "--debug",
         action="store_true",
-        help="Dump full Step 0/1/2/3 dicts after the summary.",
+        help="Dump full Step 0/1/2/3 dicts after the summary (text mode only).",
     )
     return p
 
@@ -114,6 +140,21 @@ def main() -> None:
                                bundle0=bundle0, cost=brief.cost)
 
     # -- Output ------------------------------------------------------------
+    if args.output == "json":
+        payload = {
+            "feasible": design["feasible"],
+            "bundle0":    bundle0,
+            "design":     design,
+            "bottleneck": bottleneck_result,
+            "thermals":   thermals_result,
+            "network":    network_result,
+            "storage":    storage_result,
+            "bom":        bom_result,
+            "cost":       cost_result,
+        }
+        print(json.dumps(payload, cls=_SafeEncoder, indent=2))
+        return
+
     print_summary(bundle0, design, thermals_result, network_result, storage_result,
                   bom_result, cost_result, bottleneck_result)
 
