@@ -37,9 +37,9 @@ Currently validated on a single hardware configuration (Nebius H100 SXM, InfiniB
 
 Without cost, you can answer "will it fit?" but not "is it worth building?"
 
-- [ ] **CapEx model** — unit cost inputs per component type: GPU, compute node (chassis + CPU + DRAM), NIC, leaf switch, spine switch, cable, storage node, drive, rack. Deliberately vendor-agnostic (price per TFLOP/s, price per TB, etc.).
-- [ ] **OpEx model** — electricity cost per kWh × facility power × run duration = energy cost. Already have `E_facility_kWh` from Step 2; just need price input.
-- [ ] **Cost per token** — total CapEx amortized over cluster lifetime + OpEx over run, divided by `Tok`. The number that matters for LLM economics.
+- [x] **CapEx model** — unit cost inputs per component type: GPU, compute node (chassis + CPU + DRAM), NIC, leaf switch, spine switch, cable, storage node, drive, rack. Deliberately vendor-agnostic (price per TFLOP/s, price per TB, etc.).
+- [x] **OpEx model** — electricity cost per kWh × facility power × run duration = energy cost. Already have `E_facility_kWh` from Step 2; just need price input.
+- [x] **Cost per token** — total CapEx amortized over cluster lifetime + OpEx over run, divided by `Tok`. The number that matters for LLM economics. Two views: amortised and full-capex.
 - [ ] **TCO / ROI summary** — total cost of ownership for the training run. Useful for build-vs-buy and on-prem vs. cloud comparisons.
 - [ ] **Cloud spot pricing comparison** — optional: given GPU-hours required and a spot price input, compute cloud equivalent cost.
 
@@ -49,7 +49,7 @@ Without cost, you can answer "will it fit?" but not "is it worth building?"
 
 Users need to know which constraints are binding, not just whether a design is feasible.
 
-- [ ] **Bottleneck identification** — after Step 1, explicitly report which bound is active (compute, memory, fabric, or step time). "You are memory-bound; adding GPUs won't help until you shard more aggressively."
+- [x] **Bottleneck identification** — after Step 1, explicitly report which bound is active (compute, memory, fabric, or step time). "You are memory-bound; adding GPUs won't help until you shard more aggressively."
 - [ ] **Parameter sweep** — given a brief, sweep one parameter (e.g. GPU count, TP degree, oversubscription) and return a table of results. Expose in CLI as `--sweep param=start:stop:step`.
 - [ ] **What-if deltas** — "if I upgrade NICs from 200 Gb/s to 400 Gb/s, what changes?" Requires running the pipeline twice and diffing the output.
 - [ ] **Binding constraint visualization** — Streamlit: radar/spider chart showing how close each constraint is to its limit.
@@ -129,8 +129,8 @@ A 30-day run on 1000 GPUs is not a single uninterrupted job.
 
 If this had to ship as a real product, the order would be:
 
-1. Cost model (CapEx + cost/token) — without it, the tool answers the wrong question
-2. Bottleneck identification — users need to know what to fix, not just pass/fail
+1. ~~Cost model (CapEx + cost/token)~~ ✓ — `core/cost.py`, two accounting views, 27 tests
+2. ~~Bottleneck identification~~ ✓ — `core/analysis.py`, binding constraint + headroom + recommendations, 30 tests
 3. ZeRO stage modeling — most production training uses ZeRO; without it the memory model is wrong for large models
 4. JSON output + PyPI publish — distribution and integration
 5. CI/CD + versioned releases — minimum viable open-source project hygiene
