@@ -48,6 +48,7 @@ design:
   pp_max: 16
   g_max_multiplier: 8        # search up to 8× N_min
   comm_model: ring_allreduce_dp_only
+  zero_stage: 0                # 0=full replica, 1=opt sharded, 2=grad+opt, 3=full ZeRO
 
 network:
   nics_per_node: 8           # 1 per GPU — rail-optimised HPC

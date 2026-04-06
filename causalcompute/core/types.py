@@ -90,6 +90,7 @@ class DesignInputs:
     g_max_multiplier: int = 8       # auto-size search ceiling = N_min × this
     comm_model: str = "ring_allreduce_dp_only"
     comm_exposed_fraction: float = 1.0  # 1.0 = no overlap, 0.0 = fully hidden
+    zero_stage: int = 0             # ZeRO stage: 0 (full replica), 1, 2, or 3
 
 
 # ---------------------------------------------------------------------------

@@ -186,6 +186,7 @@ def _parse(doc: dict) -> Brief:
         g_max_multiplier=_int(_get(d1, "g_max_multiplier", 8), "design.g_max_multiplier"),
         comm_model=str(_get(d1, "comm_model", "ring_allreduce_dp_only")),
         comm_exposed_fraction=_float(_get(d1, "comm_exposed_fraction", 1.0), "design.comm_exposed_fraction"),
+        zero_stage=_int(_get(d1, "zero_stage", 0), "design.zero_stage"),
     )
 
     # -- Power & thermals (Step 2 knobs) -----------------------------------

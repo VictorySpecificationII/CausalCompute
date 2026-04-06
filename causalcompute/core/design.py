@@ -11,6 +11,18 @@ Search strategy:
 Communication model v1: ring all-reduce on DP gradients only.
   TP reduces the per-rank payload by sharding parameters.
   PP and TP inter-stage comm are modelled as zero (future work).
+
+ZeRO memory model (per DP rank, before TP×PP working-set term):
+  Stage 0: B_weights + B_grads + B_opt          (full replica per DP rank)
+  Stage 1: B_weights + B_grads + B_opt/dp       (optimizer state sharded)
+  Stage 2: B_weights + (B_grads + B_opt)/dp     (grads + optimizer sharded)
+  Stage 3: (B_weights + B_grads + B_opt)/dp     (everything sharded)
+
+ZeRO communication model (inter-node bytes per rank per step):
+  Stage 0/1/2: ring allreduce on gradients  — 2·(dp-1)/dp · B_grads/tp
+  Stage 3:     reduce-scatter(grads) + 2×allgather(weights)
+               — (dp-1)/dp · (B_grads + 2·B_weights) / tp
+               (~50% more traffic than ZeRO-0 for b_w=b_g=2)
 """
 from __future__ import annotations
 
@@ -43,6 +55,62 @@ def _ring_allreduce_bytes_per_rank(payload_bytes: float, dp: int) -> float:
     if dp <= 1:
         return 0.0
     return 2.0 * (dp - 1) / dp * payload_bytes
+
+
+def _state_bytes_per_device(
+    B_w: float, B_g: float, B_opt: float,
+    dp: int, tp: int, pp: int,
+    zero_stage: int,
+) -> float:
+    """
+    Model-state bytes resident on one device under the given ZeRO stage.
+
+    TP and PP shard the model tensor-/layer-wise, so the state footprint
+    is always divided by (tp × pp) first.  ZeRO then adds DP sharding on
+    top of that shard.
+
+    Does not include the step working set (activations/temps); that term is
+    added separately in mem_per_device.
+
+    Parameters
+    ----------
+    B_w, B_g, B_opt : global bytes for weights, gradients, optimizer state
+    dp, tp, pp      : parallelism degrees
+    zero_stage      : 0, 1, 2, or 3
+    """
+    tp_pp = tp * pp
+    if zero_stage == 0:
+        # Full replica per DP rank; TP×PP shard only
+        return (B_w + B_g + B_opt) / tp_pp
+    elif zero_stage == 1:
+        # Optimizer state additionally sharded across DP
+        return (B_w + B_g) / tp_pp + B_opt / (tp_pp * dp)
+    elif zero_stage == 2:
+        # Gradients + optimizer state sharded across DP
+        return B_w / tp_pp + (B_g + B_opt) / (tp_pp * dp)
+    else:  # stage 3
+        # Everything sharded: equivalent to B_state / (tp × pp × dp) = B_state / G
+        return (B_w + B_g + B_opt) / (tp_pp * dp)
+
+
+def _zero_comm_bytes_per_rank(
+    B_w: float, B_g: float, dp: int, tp: int, zero_stage: int
+) -> float:
+    """
+    Inter-node DP communication bytes per rank per step under the given ZeRO stage.
+
+    Stage 0/1/2: ring allreduce on gradients.
+    Stage 3:     reduce-scatter(grads) + 2×allgather(weights).
+    """
+    if dp <= 1:
+        return 0.0
+    f = (dp - 1) / dp
+    bw = B_w / max(1, tp)
+    bg = B_g / max(1, tp)
+    if zero_stage < 3:
+        return 2.0 * f * bg
+    else:
+        return f * (bg + 2.0 * bw)
 
 
 def _inter_node_fraction(dp: int, gpus_per_node: int) -> float:
@@ -79,6 +147,8 @@ def _validate(inp: DesignInputs) -> None:
         raise ValueError("Unsupported comm_model; v1 supports 'ring_allreduce_dp_only' only.")
     if not (0.0 <= inp.comm_exposed_fraction <= 1.0):
         raise ValueError("comm_exposed_fraction must be in [0, 1]")
+    if inp.zero_stage not in (0, 1, 2, 3):
+        raise ValueError("zero_stage must be 0, 1, 2, or 3")
 
 
 # ---------------------------------------------------------------------------
@@ -123,15 +193,19 @@ def run_design(
     timecmp = bundle0["timecmp"]
     meta = bundle0["meta"]
 
-    B_state = float(req["B_state_min_bytes"])
-    B_step = float(inst["B_step_bytes"])
+    B_weights = float(req["B_weights_min_bytes"])
+    B_grads   = float(req["B_grads_min_bytes"])
+    B_opt     = float(req["B_opt_min_bytes"])
+    B_state   = float(req["B_state_min_bytes"])
+    B_step    = float(inst["B_step_bytes"])
     t_step_max = float(timecmp["t_step_max_s"])
-    F_step = float(stepfacts["F_step_flop"])
-    F_dev = float(meta["F_dev_sust_flop_s"])
+    F_step    = float(stepfacts["F_step_flop"])
+    F_dev     = float(meta["F_dev_sust_flop_s"])
     B_dev_mem = float(meta["B_dev_mem_bytes"])
     BW_fabric = float(meta["BW_fabric_node_sust_Bps"])
-    N_guess = int(ceil(float(timecmp["N_guess_devices"])))
-    B_update = float(mv["B_update_total_bytes_per_step"])
+    N_guess   = int(ceil(float(timecmp["N_guess_devices"])))
+    B_update  = float(mv["B_update_total_bytes_per_step"])
+    zero_stage = inp.zero_stage
 
     # -- Inner functions (closures over extracted scalars) -------------------
 
@@ -139,19 +213,24 @@ def run_design(
         return F_step / (Gi * F_dev * inp.eta_compute)
 
     def mem_per_device(dp: int, tp: int, pp: int) -> float:
-        # State sharded across DP; working set sharded across TP×PP
-        return (B_state / dp) + (B_step / (tp * pp))
+        state = _state_bytes_per_device(B_weights, B_grads, B_opt, dp, tp, pp, zero_stage)
+        return state + (B_step / (tp * pp))
 
     def comm_breakdown(dp: int, tp: int, pp: int) -> dict:
-        payload_per_rank = B_update / max(1, tp)
-        B_dp = _ring_allreduce_bytes_per_rank(payload_per_rank, dp)
+        B_dp = _zero_comm_bytes_per_rank(B_weights, B_grads, dp, tp, zero_stage)
         frac_inter = _inter_node_fraction(dp, inp.gpus_per_node)
         B_inter_gpu = B_dp * frac_inter
         B_inter_node = B_inter_gpu * inp.gpus_per_node
+        comm_model_label = (
+            "zero3_reduce_scatter_allgather"
+            if zero_stage == 3
+            else "ring_allreduce_dp_only"
+        )
         return {
-            "model": "ring_allreduce_dp_only",
+            "model": comm_model_label,
+            "zero_stage": zero_stage,
             "B_update_total_bytes_per_step": B_update,
-            "payload_per_rank_bytes": payload_per_rank,
+            "payload_per_rank_bytes": B_grads / max(1, tp),
             "B_dp_allreduce_bytes_per_step": B_dp,
             "B_comm_per_gpu_bytes_per_step": B_dp,
             "frac_inter_node_est": frac_inter,
@@ -206,9 +285,13 @@ def run_design(
                         "eta_fabric": inp.eta_fabric,
                     },
                     "memory": {
-                        "model": "state/DP + instant/(TP×PP)",
+                        "model": f"ZeRO-{zero_stage}",
+                        "zero_stage": zero_stage,
                         "B_dev_mem_bytes": B_dev_mem,
                         "bytes_per_device": mem,
+                        "state_bytes_per_device": _state_bytes_per_device(
+                            B_weights, B_grads, B_opt, dp, tp, pp, zero_stage
+                        ),
                         "state_bytes_total": B_state,
                         "instant_bytes_total": B_step,
                     },
